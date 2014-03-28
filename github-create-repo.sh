@@ -4,16 +4,14 @@
 # usage details
 usage() {
   cat << EOF
-[$0]
-USAGE: $0 test
+[`basename $0`]
+USAGE: `basename $0` [-h]
+       `basename $0` [-l]
+       `basename $0` [-v] [-r repo_name] [-m message]
 
 OPTIONS:
   -h  usage
   -r  repository name (default is the cururent directory base name)
-  -c  override path to ca certificates (sometimes curl throws an error setting
-      cerficate verify locations)
-        /usr/ssl/certs/ca-bundle.crt (curl standard)
-        /etc/ssl/certs/ca-certificates.crt (ubuntu 12.04.4 required) (default)
   -m  commit message (default is automated)
   -v  verbose (debugging)
   -l  list remote repositories (diagnostic only)
@@ -26,22 +24,19 @@ EOF
 
 # default options
 repo_name=`basename $(pwd)`
-cacert_pathname="/etc/ssl/certs/ca-certificates.crt"
 message="github-create-repo commit (automated)"
 verbose=false
 curl_flag="-s"
 list_only=false
 
 # parse options using getopts
-while getopts ":hr:c:m:vl" OPTION
+while getopts ":hr:m:vl" OPTION # while getopts ":hr:c:m:vl" OPTION
 do
   case $OPTION in
     h)  usage
         exit 0
         ;;
     r)  repo_name=$OPTARG
-        ;;
-    c)  cacert_pathname=$OPTARG
         ;;
     m)  message=$OPTARG
         ;;
@@ -50,28 +45,19 @@ do
         ;;
     l)  list_only=true
         ;;
-    :)  echo "$0: $OPTARG requires an argument to be provided"
-        echo "See '$0 -h' for usage details"
+    :)  echo "`basename $0`: $OPTARG requires an argument to be provided"
+        echo "See '`basename $0` -h' for usage details"
         exit 1
         ;;
-    ?)  echo "$0: $OPTARG invalid"
-        echo "See '$0 -h' for usage details"
+    ?)  echo "`basename $0`: $OPTARG invalid"
+        echo "See '`basename $0` -h' for usage details"
         exit 1
         ;;
   esac
 done
 
-# sanity check before messing with remote server
-echo "[$0]"
-echo "Parameters provided or default parameters assumed"
-echo "  repository name = $repo_name"
-echo "  ca certificates = $cacert_pathname"
-echo -n "Proceed [y/n]:"
-read answer
-if [ $answer != "y" ]; then
-  echo "$0: aborted"
-  exit 0
-fi
+# start working
+echo "[`basename $0`]"
 
 # validate github credentials for https security 
 username=`git config --global github.user`
@@ -85,7 +71,7 @@ if [ "$apitoken" = "" ]; then
   invalid_credentials=1
 fi
 if [ "$invalid_credentials" = "1" ]; then
-  echo "$0: invalid github credentials (see report above)"
+  echo "`basename $0`: invalid github credentials (see report above)"
   exit 3
 fi
 
@@ -104,8 +90,19 @@ fi
 # simply list all repos
 if $list_only; then
   if $verbose; then echo "Listing remote repositories ..."; fi
-  curl $curl_flag -u "$username:$apitoken" -a --cacert $cacert_pathname https://api.github.com/user/repos | grep "\"full_name\":" | cut -d \" -f 4 2>&1
-    if [ $? -ne 0 ]; then echo "$0: curl could not perform GET"; exit 5; fi
+  curl $curl_flag -u "$username:$apitoken" https://api.github.com/user/repos | grep "\"full_name\":" | cut -d \" -f 4 2>&1
+    if [ $? -ne 0 ]; then echo "`basename $0`: curl could not perform GET"; exit 5; fi
+  exit 0
+fi
+
+# sanity check before messing with remote server
+echo "Parameters provided or default parameters assumed"
+echo "  repository name = $repo_name"
+echo "  commit message = $message"
+echo -n "Proceed [y/n]:"
+read answer
+if [ $answer != "y" ]; then
+  echo "`basename $0`: aborted"
   exit 0
 fi
 
@@ -113,24 +110,24 @@ fi
 if $verbose; then echo "Creating local / github repository ..."; fi
 if [ -d .git ]; then
   git remote show origin
-  echo "$0: directory already tracked"
+  echo "`basename $0`: directory already tracked"
   exit 7
 fi
 
 if $verbose; then echo "Starting local git repository ..."; fi
 git init
 git add . 
-git commit -m $message
-  if [ $? -gt 1 ]; then echo "$0: could not commit local repository"; exit 8; fi
+git commit -m "$message"
+  if [ $? -gt 1 ]; then echo "`basename $0`: could not commit local repository"; exit 8; fi
 
 if $verbose; then echo "Creating Github repository '$repo_name' ..."; fi
-curl $curl_flag -u "$username:$apitoken" -a --cacert $cacert_pathname https://api.github.com/user/repos -d '{"name":"'$repo_name'"}' > /dev/null 2>&1
-  if [ $? -ne 0 ]; then echo "$0: curl could not perform POST"; exit 5; fi
+curl $curl_flag -u "$username:$apitoken" https://api.github.com/user/repos -d '{"name":"'$repo_name'"}' > /dev/null 2>&1
+  if [ $? -ne 0 ]; then echo "`basename $0`: curl could not perform POST"; exit 5; fi
 
 if $verbose; then echo "Pushing local code to remote server ..."; fi
 git remote add origin git@github.com:$username/$repo_name.git 2>&1
-  if [ $? -ne 0 ]; then echo "$0: could not add remote repository"; exit 8; fi
+  if [ $? -ne 0 ]; then echo "`basename $0`: could not add remote repository"; exit 8; fi
 git push -u origin master 2>&1
-  if [ $? -ne 0 ]; then echo "$0: could not push to new remote repository"; exit 8; fi
+  if [ $? -ne 0 ]; then echo "`basename $0`: could not push to new remote repository"; exit 8; fi
 
-if $verbose; then echo "$0: finished"; fi
+if $verbose; then echo "`basename $0`: finished"; fi
