@@ -1,0 +1,40 @@
+# Project files / folders
+[Bb]in
+[Oo]bj
+[Bb]uild
+[Dd]ebug*/
+[Rr]elease*/
+
+# Data files
+# [Dd]ata
+# [Ss]amples
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+
+# OSX Crap
+[Tt]humbs.db
+*.DS_DStore
+
+# SVN / git control
+.svn
+.git
