@@ -6,7 +6,7 @@ DEFAULTS_NAME=.github-repo-defaults
 BIN_PATH=/usr/local/bin
 
 help:
-	@echo "[$0]"
+	@echo "[$(FUNCTION_NAME) make]"
 	@echo "USAGE: make [ install uninstall ]"
 	@echo "  install    makes .github-create-repo.sh executable and globally"
 	@echo "             accessible and makes .github-repo-defaults available"
