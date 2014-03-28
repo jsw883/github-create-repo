@@ -1,4 +1,5 @@
 #!/bin/bash
+# github-create-repo
 
 # usage details
 usage() {
@@ -13,6 +14,7 @@ OPTIONS:
       cerficate verify locations)
         /usr/ssl/certs/ca-bundle.crt (curl standard)
         /etc/ssl/certs/ca-certificates.crt (ubuntu 12.04.4 required) (default)
+  -m  commit message (default is automated)
   -v  verbose (debugging)
   -l  list remote repositories (diagnostic only)
 
@@ -25,12 +27,13 @@ EOF
 # default options
 repo_name=`basename $(pwd)`
 cacert_pathname="/etc/ssl/certs/ca-certificates.crt"
+message="github-create-repo commit (automated)"
 verbose=false
 curl_flag="-s"
 list_only=false
 
 # parse options using getopts
-while getopts ":hr:c:vl" OPTION
+while getopts ":hr:c:m:vl" OPTION
 do
   case $OPTION in
     h)  usage
@@ -39,6 +42,8 @@ do
     r)  repo_name=$OPTARG
         ;;
     c)  cacert_pathname=$OPTARG
+        ;;
+    m)  message=$OPTARG
         ;;
     v)  verbose=true
         curl_flag=""
@@ -115,7 +120,7 @@ fi
 if $verbose; then echo "Starting local git repository ..."; fi
 git init
 git add . 
-git commit -m "github-create commit (automated)"
+git commit -m $message
   if [ $? -gt 1 ]; then echo "$0: could not commit local repository"; exit 8; fi
 
 if $verbose; then echo "Creating Github repository '$repo_name' ..."; fi
