@@ -38,3 +38,7 @@
 # SVN / git control
 .svn
 .git
+
+# Deprecated
+*deprecated*
+*DEPRECATED*
