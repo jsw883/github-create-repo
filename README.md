@@ -17,5 +17,6 @@ Modify the Makefile.config to specify your home directory and run `sudo make ins
 
 ```
 github-create-repo -l
+github-create-repo -v
 github-create-repo -v -r "specific repository name" -m "specific commit message"
 ```
