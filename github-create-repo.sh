@@ -11,7 +11,7 @@ USAGE: `basename $0` [-h]
 
 OPTIONS:
   -h  usage
-  -r  repository name (default is the cururent directory base name)
+  -r  repository name (default is the current directory base name)
   -m  commit message (default is automated)
   -v  verbose (debugging)
   -l  list remote repositories (diagnostic only)
