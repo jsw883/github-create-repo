@@ -11,7 +11,7 @@ Note that script has only be tested on Linux, and although [cURL](http://curl.ha
 
 ### Install
 
-Modify the Makefile.config to specify your home directory and run `make install`.
+Modify the Makefile.config to specify your home directory and run `sudo make install`.
 
 ### Usage
 
