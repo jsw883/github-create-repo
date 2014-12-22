@@ -29,11 +29,11 @@ EOF
 # default options
 reponame=`basename $(pwd)`
 message="github-create-repo commit (automated)"
+hostname="github.com"
 hostapi="api.github.com"
 username=`git config --global github.user`
 apitoken=`git config --global github.token`
 verbose=false
-curl_flag="-s"
 list_only=false
 
 # parse options using getopts
@@ -47,14 +47,14 @@ do
         ;;
     m)  message=$OPTARG
         ;;
-    d)  hostapi=$OPTARG
+    d)  hostname=$OPTARG
+        hostapi=$OPTARG/api/v3
         ;;
     u)  username=$OPTARG
         ;;
     f)  apitoken=`git config --file $OPTARG github.token`
         ;;
     v)  verbose=true
-        curl_flag=""
         ;;
     l)  list_only=true
         ;;
@@ -89,7 +89,7 @@ fi
 # simply list all repos
 if $list_only; then
   if $verbose; then echo "Listing remote repositories ..."; fi
-  curl $curl_flag -u "$username:$apitoken" https://$hostapi/user/repos | grep "\"full_name\":" | cut -d \" -f 4 2>&1
+  curl -s -u "$username:$apitoken" https://$hostapi/user/repos | grep "\"full_name\":" | cut -d \" -f 4 2>&1
     if [ $? -ne 0 ]; then echo "`basename $0`: curl could not perform GET"; exit 5; fi
   exit 0
 fi
@@ -98,7 +98,7 @@ fi
 echo "Parameters provided or default parameters assumed"
 echo "  repository name = $reponame"
 echo "  commit message = $message"
-echo "  enterprise domain api / host api = $hostapi"
+echo "  domain name (api) = $hostname ($hostapi)"
 echo "  github username = $username"
 echo "  github personal access token = $apitoken"
 echo -n "Proceed [y/n]:"
@@ -136,11 +136,11 @@ git commit -m "$message"
   if [ $? -gt 1 ]; then echo "`basename $0`: could not commit local repository"; exit 8; fi
 
 if $verbose; then echo "Creating Github repository '$reponame' ..."; fi
-curl $curl_flag -u "$username:$apitoken" https://$hostapi/user/repos -d '{"name":"'$reponame'"}' > /dev/null 2>&1
+curl -s -u "$username:$apitoken" https://$hostapi/user/repos -d '{"name":"'$reponame'"}' > /dev/null 2>&1
   if [ $? -ne 0 ]; then echo "`basename $0`: curl could not perform POST"; exit 5; fi
 
 if $verbose; then echo "Pushing local code to remote server ..."; fi
-git remote add origin git@github.com:$username/$reponame.git 2>&1
+git remote add origin git@$hostname:$username/$reponame.git 2>&1
   if [ $? -ne 0 ]; then echo "`basename $0`: could not add remote repository"; exit 8; fi
 git push -u origin master 2>&1
   if [ $? -ne 0 ]; then echo "`basename $0`: could not push to new remote repository"; exit 8; fi
