@@ -14,6 +14,7 @@ OPTIONS:
   -h  usage
   -r  repository name (default is the current directory base name)
   -m  commit message (default is automated)
+  -d  enterprise domain api / host api (default is api.github.com)
   -u  github username (default is global config)
   -f  github personal access token (file) (default is global config)
   -v  verbose (debugging)
@@ -28,6 +29,7 @@ EOF
 # default options
 reponame=`basename $(pwd)`
 message="github-create-repo commit (automated)"
+hostpai="api.github.com"
 username=`git config --global github.user`
 apitoken=`git config --global github.token`
 verbose=false
@@ -35,7 +37,7 @@ curl_flag="-s"
 list_only=false
 
 # parse options using getopts
-while getopts ":hr:m:u:f:vl" OPTION # while getopts ":hr:c:m:vl" OPTION
+while getopts ":hr:m:d:u:f:vl" OPTION # while getopts ":hr:c:m:vl" OPTION
 do
   case $OPTION in
     h)  usage
@@ -44,6 +46,8 @@ do
     r)  reponame=$OPTARG
         ;;
     m)  message=$OPTARG
+        ;;
+    d)  hostapi=$OPTARG
         ;;
     u)  username=$OPTARG
         ;;
@@ -85,7 +89,7 @@ fi
 # simply list all repos
 if $list_only; then
   if $verbose; then echo "Listing remote repositories ..."; fi
-  curl $curl_flag -u "$username:$apitoken" https://api.github.com/user/repos | grep "\"full_name\":" | cut -d \" -f 4 2>&1
+  curl $curl_flag -u "$username:$apitoken" https://$hostapi/user/repos | grep "\"full_name\":" | cut -d \" -f 4 2>&1
     if [ $? -ne 0 ]; then echo "`basename $0`: curl could not perform GET"; exit 5; fi
   exit 0
 fi
@@ -129,7 +133,7 @@ git commit -m "$message"
   if [ $? -gt 1 ]; then echo "`basename $0`: could not commit local repository"; exit 8; fi
 
 if $verbose; then echo "Creating Github repository '$reponame' ..."; fi
-curl $curl_flag -u "$username:$apitoken" https://api.github.com/user/repos -d '{"name":"'$reponame'"}' > /dev/null 2>&1
+curl $curl_flag -u "$username:$apitoken" https://$hostapi/user/repos -d '{"name":"'$reponame'"}' > /dev/null 2>&1
   if [ $? -ne 0 ]; then echo "`basename $0`: curl could not perform POST"; exit 5; fi
 
 if $verbose; then echo "Pushing local code to remote server ..."; fi
