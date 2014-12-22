@@ -29,7 +29,7 @@ EOF
 # default options
 reponame=`basename $(pwd)`
 message="github-create-repo commit (automated)"
-hostpai="api.github.com"
+hostapi="api.github.com"
 username=`git config --global github.user`
 apitoken=`git config --global github.token`
 verbose=false
@@ -98,6 +98,9 @@ fi
 echo "Parameters provided or default parameters assumed"
 echo "  repository name = $reponame"
 echo "  commit message = $message"
+echo "  enterprise domain api / host api = $hostapi"
+echo "  github username = $username"
+echo "  github personal access token = $apitoken"
 echo -n "Proceed [y/n]:"
 read answer
 if [ $answer != "y" ]; then
