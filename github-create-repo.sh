@@ -7,12 +7,15 @@ usage() {
 [`basename $0`]
 USAGE: `basename $0` [-h]
        `basename $0` [-l]
-       `basename $0` [-v] [-r repo_name] [-m message]
+       `basename $0` [-v] [-r reponame] [-m message]
+       `basename $0` [-v] [-u username] [-f token] [-r reponame] [-m message]
 
 OPTIONS:
   -h  usage
   -r  repository name (default is the current directory base name)
   -m  commit message (default is automated)
+  -u  github username (default is global config)
+  -f  github personal access token (file) (default is global config)
   -v  verbose (debugging)
   -l  list remote repositories (diagnostic only)
 
@@ -23,22 +26,28 @@ EOF
 }
 
 # default options
-repo_name=`basename $(pwd)`
+reponame=`basename $(pwd)`
 message="github-create-repo commit (automated)"
+username=`git config --global github.user`
+apitoken=`git config --global github.token`
 verbose=false
 curl_flag="-s"
 list_only=false
 
 # parse options using getopts
-while getopts ":hr:m:vl" OPTION # while getopts ":hr:c:m:vl" OPTION
+while getopts ":hr:m:u:f:vl" OPTION # while getopts ":hr:c:m:vl" OPTION
 do
   case $OPTION in
     h)  usage
         exit 0
         ;;
-    r)  repo_name=$OPTARG
+    r)  reponame=$OPTARG
         ;;
     m)  message=$OPTARG
+        ;;
+    u)  username=$OPTARG
+        ;;
+    f)  apitoken=`git config --file $OPTARG github.token`
         ;;
     v)  verbose=true
         curl_flag=""
@@ -60,12 +69,10 @@ done
 echo "[`basename $0`]"
 
 # validate github credentials for https security 
-username=`git config --global github.user`
 if [ "$username" = "" ]; then
   echo "Could not find username: run 'git config --global github.user <username>'"
   invalid_credentials=1
 fi
-apitoken=`git config --global github.token`
 if [ "$apitoken" = "" ]; then
   echo "Could not find personal access token for https security: run 'git config --global github.token <token>'"
   invalid_credentials=1
@@ -97,7 +104,7 @@ fi
 
 # sanity check before messing with remote server
 echo "Parameters provided or default parameters assumed"
-echo "  repository name = $repo_name"
+echo "  repository name = $reponame"
 echo "  commit message = $message"
 echo -n "Proceed [y/n]:"
 read answer
@@ -120,12 +127,12 @@ git add .
 git commit -m "$message"
   if [ $? -gt 1 ]; then echo "`basename $0`: could not commit local repository"; exit 8; fi
 
-if $verbose; then echo "Creating Github repository '$repo_name' ..."; fi
-curl $curl_flag -u "$username:$apitoken" https://api.github.com/user/repos -d '{"name":"'$repo_name'"}' > /dev/null 2>&1
+if $verbose; then echo "Creating Github repository '$reponame' ..."; fi
+curl $curl_flag -u "$username:$apitoken" https://api.github.com/user/repos -d '{"name":"'$reponame'"}' > /dev/null 2>&1
   if [ $? -ne 0 ]; then echo "`basename $0`: curl could not perform POST"; exit 5; fi
 
 if $verbose; then echo "Pushing local code to remote server ..."; fi
-git remote add origin git@github.com:$username/$repo_name.git 2>&1
+git remote add origin git@github.com:$username/$reponame.git 2>&1
   if [ $? -ne 0 ]; then echo "`basename $0`: could not add remote repository"; exit 8; fi
 git push -u origin master 2>&1
   if [ $? -ne 0 ]; then echo "`basename $0`: could not push to new remote repository"; exit 8; fi
