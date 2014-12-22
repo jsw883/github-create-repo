@@ -82,18 +82,6 @@ if [ "$invalid_credentials" = "1" ]; then
   exit 3
 fi
 
-# check for .gitignore and README.md
-if [ ! -f .gitignore ]; then
-  if $verbose; then echo "Custom .gitnore not found: attempting to copy standard .gitignore from ~/.github-repo-defaults"; fi
-  touch .gitignore
-  cp ~/.github-repo-defaults/.gitignore .gitignore
-fi
-if [ ! -f README.md ]; then
-   if $verbose; then echo "Custom README.md not found: attempting to copy standard README.md from ~/.github-repo-defaults"; fi
-   touch README.md
-   cp ~/.github-repo-defaults/README.md README.md
-fi
-
 # simply list all repos
 if $list_only; then
   if $verbose; then echo "Listing remote repositories ..."; fi
@@ -113,7 +101,7 @@ if [ $answer != "y" ]; then
   exit 0
 fi
 
-# create and push new repository
+# check if directory is already tracked
 if $verbose; then echo "Creating local / github repository ..."; fi
 if [ -d .git ]; then
   git remote show origin
@@ -121,6 +109,19 @@ if [ -d .git ]; then
   exit 7
 fi
 
+# check for .gitignore and README.md
+if [ ! -f .gitignore ]; then
+  if $verbose; then echo "Custom .gitnore not found: attempting to copy standard .gitignore from ~/.github-repo-defaults"; fi
+  touch .gitignore
+  cp ~/.github-repo-defaults/.gitignore .gitignore
+fi
+if [ ! -f README.md ]; then
+   if $verbose; then echo "Custom README.md not found: attempting to copy standard README.md from ~/.github-repo-defaults"; fi
+   touch README.md
+   cp ~/.github-repo-defaults/README.md README.md
+fi
+
+# create and push new repository
 if $verbose; then echo "Starting local git repository ..."; fi
 git init
 git add . 
