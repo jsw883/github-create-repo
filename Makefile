@@ -11,7 +11,7 @@ help:
 
 install:
 	cp github-create-repo.sh $(BIN_PATH)/$(COMMAND_NAME).sh
-	chmod +x $(BIN_PATH)/$(COMMAND_NAME).sh
+	chmod 755 $(BIN_PATH)/$(COMMAND_NAME).sh
 	ln -s $(BIN_PATH)/$(COMMAND_NAME).sh $(BIN_PATH)/$(COMMAND_NAME)
 
 	cp -a .github-repo-defaults $(HOME_PATH)/.github-repo-defaults
